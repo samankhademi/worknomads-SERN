@@ -1,0 +1,47 @@
+version: "6"
+services:
+  app:
+    container_name: worknomads-SERN-APP
+    build: ./backend
+    image: node-app
+    ports:
+      - $APP_DOCKER_PORT:$APP_LOCAL_PORT
+    environment:
+      - DB_HOST=worknomads-SERN-DB
+      - DB_USER=$DB_USER
+      - DB_PASSWORD=$DB_PASSWORD
+      - DB_DATABASE=$DB_DATABASE
+      - DB_PORT=$DB_DOCKER_PORT
+      - APP_LOCAL_PORT=$APP_LOCAL_PORT
+      - JWT_SECRET_KEY=$JWT_SECRET_KEY
+      - JWT_EXP_TIME=$JWT_EXP_TIME
+    volumes:
+      - ./backend:/usr/src/node-app
+
+    depends_on:
+      - db
+  frontend:
+    container_name: worknomads-SERN-FO
+    build: ./frontend
+    ports:
+      - $FO_DOCKER_PORT:$FO_LOCAL_PORT
+    volumes:
+      - ./frontend:/usr/src/react-app
+
+    depends_on:
+      - app
+  db:
+    container_name: worknomads-SERN-DB
+    image: "mcr.microsoft.com/mssql/server:latest"
+    ports:
+      - $DB_DOCKER_PORT:$DB_DOCKER_PORT
+    environment:
+      SA_PASSWORD: $DB_PASSWORD
+      ACCEPT_EULA: "Y"
+    volumes:
+      - mssql-data:/var/opt/mssql
+volumes:
+  mssql-data:
+networks:
+    node-network:
+      driver: bridge
